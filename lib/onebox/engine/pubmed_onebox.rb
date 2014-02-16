@@ -2,6 +2,7 @@ module Onebox
   module Engine
     class PubmedOnebox
       include Engine
+      include LayoutSupport
 
       matches do
         http
@@ -11,10 +12,6 @@ module Onebox
         has("/pubmed/")
       end
 
-      def to_html
-        "#{data[:title]}, #{data[:authors]}, #{data[:journal]}"
-      end
-
       private
 
       def data
@@ -22,14 +19,15 @@ module Onebox
         pre = doc.xpath('//pre')
         xml = "<root>" + pre.text + "</root>"
         contents = Nokogiri::XML(xml)
-        title = contents.css('ArticleTitle')[0].content
-        authors = (contents.css('LastName').map{|x| x.content}).join(", ")
-        journal = contents.css('Title')[0].content
-        { pmid: match[:pmid],
-        title: title,
-        authors: authors,
-        journal: journal,
-        link: @url }
+        {
+         title: contents.css('ArticleTitle')[0].content,
+         authors: (contents.css('LastName').map{|x| x.content}).join(", "),
+         journal: contents.css('Title')[0].content,
+         abstract: contents.css('AbstractText')[0].content,
+         year: contents.css('Year')[0].content,
+         link: @url,
+         pmid: match[:pmid]
+        }
       end
 
       def match

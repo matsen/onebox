@@ -1,17 +1,30 @@
 require "spec_helper"
 
 describe Onebox::Engine::PubmedOnebox do
-  before(:all) do
-    @link = "http://www.ncbi.nlm.nih.gov/pubmed/7288891"
+
+  let(:link) { "http://www.ncbi.nlm.nih.gov/pubmed/7288891" }
+  let(:html) { described_class.new(link).to_html }
+
+  before do
+    fake(link, response("name.response"))
   end
 
-  include_context "engines"
-  it_behaves_like "an engine"
+  it "has the paper's title" do
+    expect(html).to include("Evolutionary trees from DNA sequences: a maximum likelihood approach.")
+  end
 
-  describe "#to_html" do
-    it "includes pmid" do
-      expect(html).to include("7288891")
-    end
+  it "has the paper's author" do
+    expect(html).to include("Felsenstein")
+  end
 
+  it "has the paper's abstract" do
+    expect(html).to include("The application of maximum likelihood techniques to the estimation of evolutionary trees from nucleic acid sequence data is discussed.") end
+
+  it "has the paper's date" do
+    expect(html).to include("1981")
+  end
+
+  it "has the URL to the resource" do
+    expect(html).to include(link)
   end
 end
