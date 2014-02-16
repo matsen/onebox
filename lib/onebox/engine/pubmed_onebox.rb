@@ -12,13 +12,24 @@ module Onebox
       end
 
       def to_html
-        "#{match[:pmid]}"
+        "#{data[:title]}, #{data[:authors]}, #{data[:journal]}"
       end
 
       private
 
       def data
-        { pmid: match[:pmid], link: @url }
+        doc = Nokogiri::XML(open(@url + "?report=xml&format=text"))
+        pre = doc.xpath('//pre')
+        xml = "<root>" + pre.text + "</root>"
+        contents = Nokogiri::XML(xml)
+        title = contents.css('ArticleTitle')[0].content
+        authors = (contents.css('LastName').map{|x| x.content}).join(", ")
+        journal = contents.css('Title')[0].content
+        { pmid: match[:pmid],
+        title: title,
+        authors: authors,
+        journal: journal,
+        link: @url }
       end
 
       def match
