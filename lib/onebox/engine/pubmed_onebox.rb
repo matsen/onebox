@@ -22,7 +22,7 @@ module Onebox
         initials = contents.css("Initials").map{|x| x.content}
         last_names = contents.css("LastName").map{|x| x.content}
         author_list = (initials.zip(last_names)).map{|i,l| i + " " + l}
-        pub_date = contents.css("PubDate")
+        date_elements = (contents.css("PubDate")[0].children).map{|x| x.content}
         if author_list.length > 1 then
           author_list[-2] = author_list[-2] + " and " + author_list[-1]
           author_list.pop
@@ -32,8 +32,7 @@ module Onebox
          authors: author_list.join(", "),
          journal: contents.css("Title")[0].content,
          abstract: contents.css("AbstractText")[0].content,
-         month: pub_date.css("Month")[0].content,
-         year: pub_date.css("Year")[0].content,
+         date: date_elements.reverse.join(" "),
          link: @url,
          pmid: match[:pmid]
         }
