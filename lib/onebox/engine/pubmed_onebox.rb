@@ -16,15 +16,22 @@ module Onebox
 
       def data
         doc = Nokogiri::XML(open(@url + "?report=xml&format=text"))
-        pre = doc.xpath('//pre')
+        pre = doc.xpath("//pre")
         xml = "<root>" + pre.text + "</root>"
         contents = Nokogiri::XML(xml)
+        initials = contents.css("Initials").map{|x| x.content}
+        last_names = contents.css("LastName").map{|x| x.content}
+        author_list = (initials.zip(last_names)).map{|i,l| i + " " + l}
+        if author_list.length > 1 then
+          author_list[-2] = author_list[-2] + " and " + author_list[-1]
+          author_list.pop
+        end
         {
-         title: contents.css('ArticleTitle')[0].content,
-         authors: (contents.css('LastName').map{|x| x.content}).join(", "),
-         journal: contents.css('Title')[0].content,
-         abstract: contents.css('AbstractText')[0].content,
-         year: contents.css('Year')[0].content,
+         title: contents.css("ArticleTitle")[0].content,
+         authors: author_list.join(", "),
+         journal: contents.css("Title")[0].content,
+         abstract: contents.css("AbstractText")[0].content,
+         year: contents.css("Year")[0].content,
          link: @url,
          pmid: match[:pmid]
         }
@@ -36,6 +43,3 @@ module Onebox
     end
   end
 end
-
-
-# http://www.ncbi.nlm.nih.gov/pubmed/7288891?report=xml&format=text
